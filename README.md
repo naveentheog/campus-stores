@@ -1,7 +1,9 @@
-# Campus Stores
+# Campus Stores · Product Engineer submission
 
-> **Reviewers: my submission is in [Would I keep this product?](#would-i-keep-this-product) below.**
-> The prototype is on this branch. Open `index.html`, press **Restart sample shift**, and play the three moments.
+**Submitted by:** [naveentheog](https://github.com/naveentheog) · **Live demo:** open `index.html`, or the hosted copy linked in my form submission
+
+> **Reviewers: my submission starts at [Would I keep this product?](#would-i-keep-this-product).** The [screenshot tour](#screenshot-tour-what-i-changed-and-why) shows every change, with the reason for it.
+> To try it yourself: open `index.html`, press **Restart sample shift**, and play the three moments.
 
 ## Would I keep this product?
 
@@ -46,16 +48,84 @@ And four additions taken from how hospitals and real equipment desks handle the 
 - **Fri 3:45 pm, pickup.** Unchanged: three slips to Kabir, and the extra speaker is still blocked.
 - **Fri 7:30 pm.** *Check in an item → PR-04 → handed in by Kabir → label ticked.* The same for SP-02. The status bar says *"1 more item on RQ-214 still out."* On L-404 I chose **Record return → It's still out**. I typed what Kabir said (*"Leela still has the adapter. She'll drop it off tomorrow at nine."*) and pressed **Suggest fields from message**. It filled in **Leela Das** and **Sat 9 am**, showing the words each came from. I checked them and saved.
 
-  ![Return screen](docs/2-return-panel.png)
 - **Sat 9:00 am, a new person on shift.** The Desk book opens with *Still out: L-404 · AD-12 · Belkin AVC002, with Leela Das, Expected now* and Tara's mic, due at 10. I didn't need to read the whole thread.
 
-  ![Morning desk book](docs/4-morning-deskbook.png)
 - **Leela hands over an adapter.** I read the label. If it's **AD-15**, the app warns that this unit isn't out on any slip, and that the expected one is the Belkin AD-12 with Leela. I ask her before taking anything in. If the slip itself was wrong (AD-15 was handed out at pickup by mistake), the app asks me to check bin C4. If AD-12 is there, I can correct the slip and check AD-15 in. That correction is logged on the slip.
 
-  ![Wrong adapter](docs/6-wrong-adapter.png)
 - If it's **AD-12**, "Handed in by" is already set to **Leela Das**. I tick the label, close the slip, and get *"Film Society kit RQ-214 is complete."*
 
-  ![Right adapter](docs/7-right-adapter.png)
+## Screenshot tour: what I changed and why
+Each screenshot is from the same Film Society shift. For each one: **what went wrong in the original**, **what I changed**, and **why this fix and not another**.
+
+### 1. Before: Saturday 9 am in the original app
+![Original register on Saturday morning](docs/0a-before-morning-register.png)
+**What goes wrong:** the adapter slip still reads *"RQ-214 · Kabir Sen · Due Fri 8 pm"*, 13 hours late, with no warning. Leela isn't mentioned anywhere on the record, there's no model name, and **Record return** closes the slip in one click.
+**Why this matters:** the morning person never saw Friday. The slip is the only thing they can trust, and it's wrong.
+
+### 2. Before: the only handover is free text
+![Original desk book](docs/0b-before-deskbook.png)
+**What goes wrong:** the fact that Leela has the adapter lives only in a note from Kabir, not linked to any slip. The next shift has to find it, read it and connect it to L-404 themselves.
+**Why this matters:** this is the same failure as a nurse handover written on paper: the information exists, but it isn't attached to the thing it's about.
+
+### 3. A return asks for the label and offers two outcomes
+![Return screen with label check and still-out form](docs/2-return-panel.png)
+**What I changed:** "Record return" now opens a screen. To close the slip, you tick *"The label reads AD-12 · BELKIN AVC002"* and record the condition. If the unit isn't here, **It is still out** records who has it now and when it's promised back.
+**Why:** it's a closed loop, the same idea as checking a barcode before giving a medicine. I chose a label tick over a barcode scanner because the desk has no scanner, and the tick costs nothing.
+
+### 4. AI turns what was said into the form fields, and the worker checks them
+![Suggestion from a clear message](docs/3a-suggest-clear.png)
+**What I changed:** paste what Kabir said, press **Suggest fields from message**, and it fills in *Leela Das* and *Sat 9 am*, showing the words each value came from.
+**Why:** this is the only point where free text enters the record, so it's the only place I used AI. The worker always confirms before saving.
+
+### 5. When the message is unclear, it asks instead of guessing
+![Suggestion from an unclear message](docs/3b-suggest-unclear.png)
+**What I changed:** for *"Leela or Isha has it, not sure. Tomorrow morning."*, both fields stay on **Ask them…**, with the reasons listed.
+**Why:** a confidently wrong field is worse than an empty one. The extractor's own test has 18 messages and **0 unsafe errors** (two were found in v1 and fixed).
+
+### 6. A new holder isn't trusted until they confirm
+![Not yet confirmed by Leela, with a ready-to-send message](docs/12-holder-confirm.png)
+**What I changed:** the slip says *"Not yet confirmed by Leela Das. Only Kabir has said Leela has it."* It offers a ready-to-send WhatsApp/SMS message and a **Leela confirmed** button.
+**Why:** custody moved on one person's word. Asset-tracking tools ask the recipient to accept an item, and Indian college libraries already send reminders over WhatsApp.
+
+### 7. The morning shift reads back what's still out
+![Read-back checklist in the desk book](docs/13-read-back.png)
+**What I changed:** before the first customer, the incoming worker ticks each open item, then presses **I have read these back: start my shift**.
+**Why:** this is the read-back step of the I-PASS hospital handover method, which cut medical errors by 23% in a nine-hospital study without making handovers longer.
+
+### 8. The morning register: custody, timing and history on the slip
+![Morning register with custody and timing](docs/5-morning-register.png)
+**What I changed:** each slip shows the model, *"Signed out by Kabir Sen · Now with Leela Das"*, an **Expected now / Overdue / Due** badge against the desk clock, and the slip's own history.
+**Why:** the morning worker can act from the slip alone. Compare it with screenshot 1.
+
+### 9. The desk book summarises what's still out, from the slips
+![Morning desk book with still-out summary](docs/4-morning-deskbook.png)
+**What I changed:** a **Still out** card at the top, and every custody change posted automatically from the slip.
+**Why:** the handover no longer depends on someone remembering to write a note. Free-text notes are still there for everything else.
+
+### 10. A wrong unit is refused, with a way to correct the slip
+![Wrong adapter warning with slip correction](docs/6-wrong-adapter.png)
+**What I changed:** checking in **AD-15** shows a red warning: it isn't on any slip, and the expected unit is the Belkin AD-12 with Leela. If the slip itself was wrong at pickup, *"Or: the slip is wrong"* asks you to check bin C4 first, then correct it.
+**Why:** my first version only refused the unit, and the evaluation (scenario S6) showed that left the records wrong. This fix came straight from the eval.
+
+### 11. The right unit closes the slip and completes the kit
+![Right adapter check-in](docs/7-right-adapter.png)
+**What I changed:** "Handed in by" is already set to Leela. Tick the label, close the slip, and the status bar says *"Film Society kit RQ-214 is complete."*
+**Why:** the worker should never have to work out by hand whether a kit is finished.
+
+### 12. Look-alike units are shown so you can tell them apart
+![Look-alike warning on the issue form](docs/11-lookalike-issue.png)
+**What I changed:** AD-12 and AD-15 share bin C4, so wherever they appear, the number and brand are in bold capitals: *AD-**12** · **BELKIN*** against *AD-**15** · **ANKER***.
+**Why:** this borrows Tall Man lettering, which hospitals use for look-alike drug names. The evidence for it is mixed, so it backs up the label check rather than replacing it.
+
+### 13. Condition on return: damaged units stay off the shelf
+![Condition field on return](docs/14-condition.png)
+**What I changed:** Working / Damaged / Part missing, with a note. A damaged unit shows as **Needs check** in Inventory and can't be issued until someone clears it.
+**Why:** university desks already flag broken items out of circulation. Without this, the scenario where the adapter comes back bent (S5) failed in both versions.
+
+### 14. Shift metrics: the numbers I'd watch in a pilot
+![Shift metrics page](docs/10-metrics.png)
+**What I changed:** for each shift: slips closed, slips kept open with a new holder, time taken to act, **screens opened before acting**, wrong units caught, overdue slips at the start of the shift, whether the handover was read back, and how often workers change a suggestion.
+**Why:** the JD says a feature "counts once it is in use and has moved a number". These are the numbers I'd compare between the old and new versions.
 
 ### What I kept, and what I deliberately didn't change
 - **Kept:** one slip per physical unit, the checks on approved type and quantity, the hidden in-repair unit, the Outstanding / All slips switch, and the free-text Desk book.
@@ -76,8 +146,6 @@ Hospitals already have this exact failure: information lost at shift change, loo
 | Closing the wrong slip | **Barcode checking at the bedside** cut non-timing medication errors by 41% (Poon et al., *NEJM* 2010). The label check is the no-scanner version of the same closed loop | "The label reads AD-12 · Belkin" tick, and check-in that starts from the unit |
 
 Sources: [I-PASS, NEJM 2014 summary](https://reliasmedia.com/articles/134788-multicenter-quality-improvement-project-resulted-in-a-23-reduction-in-medical-errors) · [I-PASS handover time](https://www.clinician.com/articles/134526-study-new-approach-to-handoffs-slashes-errors-preventable-adverse-events-other-medical-centers-move-to-implement-the-protocol) · [Tall Man lettering](https://en.wikipedia.org/wiki/Tall_Man_lettering) · [Barcode eMAR, NEJM 2010](https://psnet.ahrq.gov/issue/effect-bar-code-technology-safety-medication-administration) · [Snipe-IT acceptance](https://snipe-it.readme.io/docs/requiring-acceptance) · [Cheqroom partial check-ins](https://help.cheqroom.com/en/articles/720823-handling-partial-check-ins-of-equipment) · [WhatsApp reminders in a Kochi college library](https://inkl.com/news/kochi-college-introduces-novel-initiative-of-integrating-whatsapp-with-its-automated-library-management-system)
-
-![Read-back at the start of the morning shift](docs/13-read-back.png)
 
 ### Evaluation: does the change actually make the records right?
 One clean run of the shift proves very little, so I wrote 9 variants of it in `eval/run_eval.py`. In each one, something goes differently: the wrong adapter, someone else returns it, a skipped step, a misclick. The **same simulated counter worker** runs each scenario on the original app (upstream commit `aeeba26`) and on mine. Then the script compares the app's records with what physically happened.
@@ -142,8 +210,6 @@ If assumption 1 or 2 turns out wrong, the read-back and look-alike features matt
 
 **How it works (`extract.js`).** You type or paste what Kabir said, then press **Suggest fields from message**. It returns `{ holder, promised, evidence, issues }`. Any field the message doesn't settle stays on **"Ask them…"**, and the reason is shown: unknown person, two names, no desk slot for that time, and so on. In this prototype it's a rule-based stand-in so the app still runs offline. The contract is the structured output I would ask an LLM for, and the evaluation set below is what I would run any model against before letting it replace the rules.
 
-![Unclear message: it asks instead of guessing](docs/3b-suggest-unclear.png)
-
 **Evaluation (`node eval/extract_eval.js`): 18 realistic counter messages, 36 fields.** Each field is graded as correct, *asked* (left empty with a reason, which is safe), *missed* (asked when the message was clear: costs time, but safe), or **unsafe** (filled in with the wrong value).
 
 | Run | Correct | Asked (right to) | Missed | **Unsafe** |
@@ -166,8 +232,6 @@ The **Shift metrics** page also counts how often the worker changes a suggestion
 
 ### Metrics built into the prototype
 A **Shift metrics** page logs, for each shift: slips closed, slips kept open with a new holder, the median time from opening a return to finishing it, **screens opened before acting**, wrong units caught, and overdue slips at the start of the shift. There's a "Copy metrics as JSON" button. In a real pilot, these are the numbers I would compare between the two versions.
-
-![Shift metrics](docs/10-metrics.png)
 
 ### How I used AI tools, and what I checked
 I built this with Claude as a pair. These are the cases where checking the output changed the result:
@@ -208,7 +272,6 @@ Each browser stores its own sample shift locally when browser storage is availab
 - `styles.css` defines the desktop and mobile layouts.
 
 Icon license notices are in [third-party/lucide-LICENSE.txt](third-party/lucide-LICENSE.txt).
-
 
 ## Submit your work
 
